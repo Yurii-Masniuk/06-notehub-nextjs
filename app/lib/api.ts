@@ -2,7 +2,7 @@ import axios, { type AxiosResponse } from 'axios';
 import type { Note, NoteTag } from '@/types/note';
 
 const BASE_URL = 'https://notehub-public.goit.study/api';
-const TOKEN = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
+const TOKEN = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN || process.env.NOTEHUB_TOKEN;
 
 if (!TOKEN) {
     console.error('NEXT_PUBLIC_NOTEHUB_TOKEN is not set in environment variables!');
@@ -38,11 +38,19 @@ export const fetchNotes = async (
 ): Promise<NotesCollectionResponse> => {
     const finalParams: FetchNotesParams = { perPage: 12, ...params };
 
-    const urlParams = new URLSearchParams({
-        ...(finalParams.page && { page: finalParams.page.toString() }),
-        ...(finalParams.perPage && { perPage: finalParams.perPage.toString() }),
-        ...(finalParams.search && { search: finalParams.search }),
-    }).toString();
+    const queryParams: Record<string, string> = {};
+
+    if (finalParams.page !== undefined && finalParams.page !== null) {
+        queryParams.page = finalParams.page.toString();
+    }
+    if (finalParams.perPage !== undefined && finalParams.perPage !== null) {
+        queryParams.perPage = finalParams.perPage.toString();
+    }
+    if (finalParams.search) {
+        queryParams.search = finalParams.search;
+    }
+
+    const urlParams = new URLSearchParams(queryParams).toString();
 
     const url = `/notes${urlParams ? '?' + urlParams : ''}`;
 
