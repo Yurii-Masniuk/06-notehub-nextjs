@@ -7,10 +7,16 @@ import NoteDetailsClient from "./NoteDetails.client";
 import { fetchNoteById } from "@/lib/api";
 import { NOTE_QUERY_KEY } from "@/constants/query-keys";
 
+// interface NoteDetailsPageProps {
+//     params: {
+//         id: string;
+//     };
+// }
+
 interface NoteDetailsPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 const createQueryClient = () => {
@@ -23,9 +29,11 @@ const createQueryClient = () => {
     });
 };
 
-export default async function NoteDetailsPage({
-    params: { id },
-}: NoteDetailsPageProps) {
+export default async function NoteDetailsPage(props: NoteDetailsPageProps) {
+
+    const { params } = props;
+    const { id } = await params;
+
     const queryClient = createQueryClient();
 
     await queryClient.prefetchQuery({

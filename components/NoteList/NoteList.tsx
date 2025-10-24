@@ -2,8 +2,10 @@ import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Note } from '@/types/note';
 import { deleteNote } from '@/lib/api';
+import { NOTES_QUERY_KEY } from '@/constants/query-keys';
 import css from './NoteList.module.css';
 import toast from 'react-hot-toast';
+import Link from 'next/link';
 
 interface NoteListProps {
     notes: Note[];
@@ -19,8 +21,8 @@ const NoteList: React.FC<NoteListProps> = ({ notes }) => {
     } = useMutation<Note, Error, string>({
         mutationFn: deleteNote,
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [NOTES_QUERY_KEY] });
             toast.success('Нотатка успішно видалена.');
-            queryClient.invalidateQueries({ queryKey: ['notes'] });
         },
         onError: (error) => {
             console.error('Помилка при видаленні нотатки:', error);
@@ -29,7 +31,9 @@ const NoteList: React.FC<NoteListProps> = ({ notes }) => {
     });
 
     const handleDelete = (id: string) => {
-        mutate(id);
+        if (window.confirm('Ви впевнені, що хочете видалити цю нотатку?')) {
+            mutate(id);
+        }
     };
 
     if (notes.length === 0) {
@@ -43,16 +47,18 @@ const NoteList: React.FC<NoteListProps> = ({ notes }) => {
 
                 return (
                     <li key={note.id} className={css.listItem}>
-                        <h2 className={css.title}>{note.title}</h2>
-                        <p className={css.content}>{note.content}</p>
-                        <div className={css.footer}>
+                        <Link href={`/notes/${note.id}`} className={css.noteLink}>
+                            <h2 className={css.title}>{note.title}</h2>
+                            <p className={css.content}>{note.content}</p>
                             <span className={css.tag}>{note.tag}</span>
+                        </Link>
 
+                        <div className={css.footer}>
                             <button
                                 className={css.button}
                                 type="button"
                                 onClick={() => handleDelete(note.id)}
-                                disabled={isPending} // <-- ВИПРАВЛЕНО
+                                disabled={isPending}
                             >
                                 {isDeleting ? 'Deleting...' : 'Delete'}
                             </button>

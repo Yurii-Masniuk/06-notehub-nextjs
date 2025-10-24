@@ -3,6 +3,8 @@ import * as Yup from 'yup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createNote, type CreateNotePayload } from '@/lib/api';
 import type { NoteTag, Note } from '@/types/note';
+import toast from 'react-hot-toast';
+import { NOTES_QUERY_KEY } from '@/constants/query-keys';
 import css from './NoteForm.module.css';
 
 const AVAILABLE_TAGS: NoteTag[] = ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'];
@@ -34,37 +36,30 @@ const NoteForm: React.FC<NoteFormProps> = ({ onCancel }) => {
 
     const createNoteMutation = useMutation({
         mutationFn: createNote,
-        onSuccess: (_) => {
-            queryClient.setQueryData<Note[]>(['notes'], (oldNotes) => {
-                queryClient.invalidateQueries({ queryKey: ['notes'] });
-                return oldNotes;
-            });
-
+        onSuccess: (newNote) => {
+            queryClient.invalidateQueries({ queryKey: [NOTES_QUERY_KEY] });
+            toast.success(`Note "${newNote.title}" created successfully!`);
             onCancel();
         },
         onError: (error) => {
             console.error('Помилка при створенні нотатки:', error);
-            alert('Помилка при створенні нотатки. Спробуйте пізніше.');
+            toast.error('Помилка при створенні нотатки. Спробуйте пізніше.');
         },
     });
-
-    const handleSubmit = (
-        values: CreateNotePayload,
-        { setSubmitting }: FormikHelpers<CreateNotePayload>,
-    ) => {
-        createNoteMutation.mutate(values);
-        setSubmitting(false);
-    };
-
-    const isSubmitting = createNoteMutation.isPending;
 
     return (
         <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
-            onSubmit={handleSubmit}
+            onSubmit={(values, helpers) => {
+                helpers.setSubmitting(true);
+
+                createNoteMutation.mutate(values, {
+                    onSettled: () => helpers.setSubmitting(false),
+                });
+            }}
         >
-            {({ isValid, dirty }) => (
+            {({ isValid, dirty, isSubmitting: formikIsSubmitting }) => (
                 <Form className={css.form}>
 
                     <div className={css.formGroup}>
@@ -106,16 +101,16 @@ const NoteForm: React.FC<NoteFormProps> = ({ onCancel }) => {
                             type="button"
                             className={css.cancelButton}
                             onClick={onCancel}
-                            disabled={isSubmitting}
+                            disabled={formikIsSubmitting}
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             className={css.submitButton}
-                            disabled={isSubmitting || !isValid || !dirty}
+                            disabled={formikIsSubmitting || !isValid || !dirty}
                         >
-                            {isSubmitting ? 'Creating...' : 'Create note'}
+                            {formikIsSubmitting ? 'Creating...' : 'Create note'}
                         </button>
                     </div>
                 </Form>
