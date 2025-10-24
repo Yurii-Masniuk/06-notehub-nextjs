@@ -23,7 +23,7 @@ const NoteDetailsClient = ({ id }: NoteDetailsClientProps) => {
         return (
             <div className="text-center p-8 bg-red-100 border border-red-400 rounded-lg">
                 <h2 className="text-xl font-bold text-red-600 mb-4">Error loading note</h2>
-                <p className="text-red-500">The note with ID "{id}" could not be loaded or does not exist.</p>
+                <p className="text-red-500">The note with ID {`"${id}"`} could not be loaded or does not exist.</p>
                 <Link href="/notes" className="text-blue-500 mt-4 inline-block hover:underline">
                     Go back to Notes List
                 </Link>

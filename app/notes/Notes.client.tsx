@@ -93,7 +93,7 @@ const NotesClient = () => {
 
             {!isLoading && !isError && notes.length === 0 && (
                 <p className="text-center py-10 text-xl text-gray-700">
-                    Не знайдено жодної нотатки за запитом "{searchQuery}".
+                    Не знайдено жодної нотатки за запитом {`"${searchQuery}"`}.
                 </p>
             )}
 

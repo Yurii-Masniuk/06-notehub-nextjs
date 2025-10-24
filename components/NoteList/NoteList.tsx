@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Note } from '@/types/note';
 import { deleteNote } from '@/lib/api';
 import css from './NoteList.module.css';
+import toast from 'react-hot-toast';
 
 interface NoteListProps {
     notes: Note[];
@@ -14,22 +15,21 @@ const NoteList: React.FC<NoteListProps> = ({ notes }) => {
     const {
         mutate,
         isPending,
-        variables,
+        variables
     } = useMutation<Note, Error, string>({
         mutationFn: deleteNote,
         onSuccess: () => {
+            toast.success('Нотатка успішно видалена.');
             queryClient.invalidateQueries({ queryKey: ['notes'] });
         },
         onError: (error) => {
             console.error('Помилка при видаленні нотатки:', error);
-            alert('Помилка: не вдалося видалити нотатку.');
+            toast.error('Помилка: не вдалося видалити нотатку.');
         },
     });
 
     const handleDelete = (id: string) => {
-        if (window.confirm('Ви впевнені, що хочете видалити цю нотатку?')) {
-            mutate(id);
-        }
+        mutate(id);
     };
 
     if (notes.length === 0) {
@@ -39,9 +39,7 @@ const NoteList: React.FC<NoteListProps> = ({ notes }) => {
     return (
         <ul className={css.list}>
             {notes.map((note) => {
-                const isDeleting =
-                    isPending &&
-                    variables === note.id;
+                const isDeleting = isPending && variables === note.id;
 
                 return (
                     <li key={note.id} className={css.listItem}>
@@ -54,7 +52,7 @@ const NoteList: React.FC<NoteListProps> = ({ notes }) => {
                                 className={css.button}
                                 type="button"
                                 onClick={() => handleDelete(note.id)}
-                                disabled={isPending}
+                                disabled={isPending} // <-- ВИПРАВЛЕНО
                             >
                                 {isDeleting ? 'Deleting...' : 'Delete'}
                             </button>
