@@ -11,7 +11,7 @@ import Pagination from '@/components/Pagination/Pagination';
 import Modal from '@/components/Modal/Modal';
 import NoteForm from '@/components/NoteForm/NoteForm';
 
-import { fetchNotes, type NotesCollectionResponse } from '@/app/lib/api';
+import { fetchNotes, type NotesCollectionResponse } from '@/lib/api';
 import { NOTES_QUERY_KEY } from '@/constants/query-keys';
 
 const INITIAL_PAGE = 1;
